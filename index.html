@@ -50,6 +50,7 @@
             font-family: var(--font-family);
             background-color: var(--bg-color);
             color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -67,7 +68,7 @@
             overflow: hidden;
         }
 
-        /* --- ★修正★ フェードインアニメーションのみ定義 --- */
+        /* --- フェードインアニメーション --- */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -98,6 +99,7 @@
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
             border-bottom: 3px solid transparent;
         }
 
@@ -162,6 +164,7 @@
             cursor: pointer;
             font-size: 1rem;
             font-weight: 500;
+            transition: background-color 0.3s, border-color 0.3s;
         }
         
         .mode-button:hover {
@@ -229,6 +232,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: background-color 0.3s;
         }
         
         .cell:not(.occupied):hover {
