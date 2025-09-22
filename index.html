@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tic-Tac-Toe</title>
+
+    <!-- Google Fonts: Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 変数定義 --- */
+        :root {
+            --bg-color: #f4f7f9;
+            --text-color: #2c3e50;
+            --card-bg-color: #ffffff;
+            --border-color: #e0e0e0;
+            --primary-color: #3498db;
+            --primary-text-color: #ffffff;
+            --accent-color-x: #e74c3c;
+            --accent-color-o: #2ecc71;
+            --disabled-color: #bdc3c7;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --font-family: 'Roboto', sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a2e;
+                --text-color: #e0e0e0;
+                --card-bg-color: #16213e;
+                --border-color: #4a4a6a;
+                --primary-color: #0f3460;
+                --primary-text-color: #e94560;
+                --disabled-color: #5a5a7a;
+                --shadow-color: rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        /* --- 基本スタイル --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        main {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* --- フェードインアニメーション --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* --- タブナビゲーション --- */
+        .tabs {
+            display: flex;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            background-color: var(--border-color);
+        }
+
+        .tab-button.active {
+            color: var(--primary-text-color);
+            background-color: var(--primary-color);
+            border-bottom-color: var(--accent-color-x);
+        }
+
+        .tab-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* --- タブコンテンツ --- */
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        .tab-content > * {
+             opacity: 0; /* アニメーションのために初期状態を透明に */
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .setting-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mode-button, #start-game-btn {
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        
+        .mode-button:hover {
+             border-color: var(--primary-color);
+        }
+        
+        .mode-button.selected {
+            background-color: var(--primary-color);
+            color: var(--primary-text-color);
+            border-color: var(--primary-color);
+        }
+
+        #start-game-btn {
+            width: 100%;
+            background-color: var(--accent-color-o);
+            color: white;
+            border-color: var(--accent-color-o);
+            font-weight: 700;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        #size-slider {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+        
+        #board-size-value {
+            font-weight: 700;
+            background-color: var(--bg-color);
+            padding: 0.5rem;
+            border-radius: 6px;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        /* --- ゲーム画面 --- */
+        #game-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            min-height: 2.5em; /* 40pxのスピナーが収まる高さ */
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #game-board {
+            display: grid;
+            gap: 5px;
+            margin-bottom: 1.5rem;
+            aspect-ratio: 1 / 1;
+        }
+
+        .cell {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        
+        .cell:not(.occupied):hover {
+            background-color: var(--border-color);
+        }
+
+        .cell.X { color: var(--accent-color-x); }
+        .cell.O { color: var(--accent-color-o); }
+
+        .cell svg {
+            width: 60%;
+            height: 60%;
+        }
+
+        .cell.win {
+            background-color: var(--accent-color-o);
+        }
+        .cell.win svg {
+             color: white;
+        }
+
+        #game-controls {
+            display: flex;
+            justify-content: center;
+        }
+        
+        #new-game-btn {
+             padding: 0.8rem 1.5rem;
+             border: 2px solid var(--border-color);
+             background-color: var(--card-bg-color);
+             color: var(--text-color);
+             border-radius: 8px;
+             cursor: pointer;
+             font-size: 1rem;
+             font-weight: 500;
+        }
+
+        /* --- AIローディングスピナー --- */
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        .loader {
+            width: 40px;
+            height: 40px;
+            animation: rotate 1s linear infinite;
+            transform-origin: center center;
+        }
+        .loader .path {
+            stroke: var(--primary-color);
+            stroke-linecap: round;
+            stroke-dasharray: 89 150;
+            stroke-dashoffset: 0;
+            stroke-width: 4;
+        }
+        @media (prefers-color-scheme: dark) {
+            .loader .path {
+                stroke: var(--primary-text-color);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <nav class="tabs">
+            <button class="tab-button active" data-tab="settings-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-controller" viewBox="0 0 16 16">
+                  <path d="M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1z"/>
+                  <path d="M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729q.211.136.373.297c.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466s.34 1.78.364 2.606c.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527s-2.496.723-3.224 1.527c-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.3 2.3 0 0 1 .433-.335l-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a14 14 0 0 0-.748 2.295 12.4 12.4 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.4 12.4 0 0 0-.339-2.406 14 14 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27s-2.063.091-2.913.27"/>
+                </svg>
+                ゲーム設定
+            </button>
+            <button class="tab-button" data-tab="game-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dice-5" viewBox="0 0 16 16">
+                  <path d="M13 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3z"/>
+                  <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                </svg>
+                対戦
+            </button>
+        </nav>
+
+        <div id="settings-tab" class="tab-content active">
+            <div class="fade-in">
+                <h2>ゲーム設定</h2>
+                <div class="setting-group">
+                    <label>ゲームモードを選択</label>
+                    <div class="button-group">
+                        <button class="mode-button selected" data-mode="ai">AIと対戦</button>
+                        <button class="mode-button" data-mode="2p">2人で対戦</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>ボードサイズ</label>
+                    <div class="slider-container">
+                        <span>3x3</span>
+                        <input type="range" id="size-slider" min="3" max="100" value="3">
+                        <span id="board-size-value">3 x 3</span>
+                    </div>
+                </div>
+                <button id="start-game-btn">ゲーム開始</button>
+            </div>
+        </div>
+
+        <div id="game-tab" class="tab-content">
+             <div class="fade-in">
+                <div id="game-info">ゲーム設定タブで設定を開始してください。</div>
+                <div id="game-board"></div>
+                <div id="game-controls">
+                    <button id="new-game-btn" style="display: none;">新しいゲーム</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- ★★★ 重要 ★★★ ---
+        // あなたのCloudflare WorkerのURLに書き換えてください。
+        const WORKER_URL = 'https://math-solver-proxy.nden14800.workers.dev';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- グローバル変数 ---
+            let gameState = {};
+
+            // --- SVGアイコン定義 ---
+            const SVG_O_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/></svg>`;
+            const SVG_X_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
+            const SPINNER_HTML = `<div class="loader-container"><svg class="loader" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none"></circle></svg></div>`;
+
+
+            // --- DOM要素 ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const modeButtons = document.querySelectorAll('.mode-button');
+            const sizeSlider = document.getElementById('size-slider');
+            const boardSizeValue = document.getElementById('board-size-value');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const gameBoard = document.getElementById('game-board');
+            const gameInfo = document.getElementById('game-info');
+            const newGameBtn = document.getElementById('new-game-btn');
+
+            // --- 初期設定 ---
+            let selectedMode = 'ai';
+            let selectedSize = 3;
+            
+            // --- イベントリスナー ---
+            
+            // タブ切り替え
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+                    
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === targetTab) {
+                            content.classList.add('active');
+                            const innerContent = content.querySelector('.fade-in');
+                            if (innerContent) {
+                                innerContent.style.animation = 'none';
+                                void innerContent.offsetWidth; // Reflow
+                                innerContent.style.animation = '';
+                            }
+                        }
+                    });
+                });
+            });
+
+            // ゲームモード選択
+            modeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    modeButtons.forEach(btn => btn.classList.remove('selected'));
+                    button.classList.add('selected');
+                    selectedMode = button.dataset.mode;
+                });
+            });
+
+            // ボードサイズスライダー
+            sizeSlider.addEventListener('input', () => {
+                selectedSize = parseInt(sizeSlider.value);
+                boardSizeValue.textContent = `${selectedSize} x ${selectedSize}`;
+            });
+
+            // ゲーム開始ボタン
+            startGameBtn.addEventListener('click', () => {
+                initGame(selectedMode, selectedSize);
+                document.querySelector('.tab-button[data-tab="game-tab"]').click();
+            });
+            
+            // 新しいゲームボタン
+            newGameBtn.addEventListener('click', () => {
+                 document.querySelector('.tab-button[data-tab="settings-tab"]').click();
+            });
+
+            // --- ゲームロジック関数 ---
+
+            function initGame(mode, size) {
+                gameState = {
+                    mode: mode,
+                    size: size,
+                    board: Array(size).fill(null).map(() => Array(size).fill('')),
+                    currentPlayer: 'X',
+                    isGameOver: false,
+                    moves: 0,
+                    aiPlayer: 'O',
+                    humanPlayer: 'X'
+                };
+                newGameBtn.style.display = 'none';
+                renderBoard();
+                updateGameInfo();
+            }
+            
+            function renderBoard() {
+                gameBoard.innerHTML = '';
+                gameBoard.style.gridTemplateColumns = `repeat(${gameState.size}, 1fr)`;
+                gameBoard.style.gridTemplateRows = `repeat(${gameState.size}, 1fr)`;
+
+                for (let row = 0; row < gameState.size; row++) {
+                    for (let col = 0; col < gameState.size; col++) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('cell', 'fade-in');
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        cell.addEventListener('click', handleCellClick);
+                        gameBoard.appendChild(cell);
+                    }
+                }
+            }
+
+            function handleCellClick(event) {
+                if (gameState.isGameOver) return;
+
+                const cell = event.currentTarget;
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+
+                if (gameState.board[row][col] !== '') return;
+                
+                if (gameState.mode === '2p' || gameState.currentPlayer === gameState.humanPlayer) {
+                    makeMove(row, col);
+                }
+            }
+
+            function makeMove(row, col) {
+                if (gameState.isGameOver || gameState.board[row][col] !== '') return;
+
+                gameState.board[row][col] = gameState.currentPlayer;
+                gameState.moves++;
+                
+                const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+                cell.innerHTML = gameState.currentPlayer === 'X' ? SVG_X_ICON : SVG_O_ICON;
+                cell.classList.add(gameState.currentPlayer, 'occupied', 'fade-in');
+
+                if (checkWin(row, col)) {
+                    endGame(`${gameState.currentPlayer} の勝ち！`);
+                } else if (gameState.moves === gameState.size * gameState.size) {
+                    endGame('引き分け！');
+                } else {
+                    switchPlayer();
+                }
+            }
+            
+            function switchPlayer() {
+                gameState.currentPlayer = gameState.currentPlayer === 'X' ? 'O' : 'X';
+                
+                if (gameState.mode === 'ai' && gameState.currentPlayer === gameState.aiPlayer && !gameState.isGameOver) {
+                    setTimeout(aiMove, 500); 
+                } else {
+                    updateGameInfo();
+                }
+            }
+            
+            function updateGameInfo(message) {
+                 if (message) {
+                    gameInfo.textContent = message;
+                } else if (gameState.isGameOver) {
+                    return;
+                } else {
+                    gameInfo.textContent = `${gameState.currentPlayer} のターン`;
+                }
+                gameInfo.classList.add('fade-in');
+                gameInfo.addEventListener('animationend', () => gameInfo.classList.remove('fade-in'), { once: true });
+            }
+
+            function checkWin(row, col) {
+                const player = gameState.currentPlayer;
+                const size = gameState.size;
+                const board = gameState.board;
+                const winCondition = size > 5 ? 5 : size;
+
+                const checkDirection = (dr, dc) => {
+                    let winningCells = [{r: row, c: col}];
+                    // 正方向
+                    for (let i = 1; i < winCondition; i++) {
+                        const r = row + i * dr;
+                        const c = col + i * dc;
+                        if (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) {
+                            winningCells.push({r, c});
+                        } else {
+                            break;
+                        }
+                    }
+                    // 負方向
+                    for (let i = 1; i < winCondition; i++) {
+                        const r = row - i * dr;
+                        const c = col - i * dc;
+                        if (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) {
+                           winningCells.push({r, c});
+                        } else {
+                           break;
+                        }
+                    }
+                    if (winningCells.length >= winCondition) {
+                        highlightWinningCells(winningCells);
+                        return true;
+                    }
+                    return false;
+                };
+
+                return checkDirection(1, 0) || checkDirection(0, 1) || checkDirection(1, 1) || checkDirection(1, -1);
+            }
+            
+            function highlightWinningCells(cells) {
+                cells.forEach(cellPos => {
+                    const cell = document.querySelector(`.cell[data-row='${cellPos.r}'][data-col='${cellPos.c}']`);
+                    if(cell) cell.classList.add('win');
+                });
+            }
+
+            function endGame(message) {
+                gameState.isGameOver = true;
+                updateGameInfo(message);
+                newGameBtn.style.display = 'block';
+                newGameBtn.classList.add('fade-in');
+            }
+            
+            // --- AIロジック ---
+
+            async function aiMove() {
+                gameInfo.innerHTML = SPINNER_HTML;
+                
+                const prompt = `あなたはプロの三目並べプレイヤーAIです。現在の盤面の状態は以下の通りです。空のマスは "" で表されます。あなたはプレイヤー '${gameState.aiPlayer}' です。盤面のサイズ: ${gameState.size} x ${gameState.size}。勝利条件は${gameState.size > 5 ? 5 : gameState.size}個並べることです。現在の盤面: ${JSON.stringify(gameState.board)}。次にあなたが打つべき最も戦略的なマスの座標を、"行,列" の形式で一つだけ答えてください。座標は0から始まるインデックスです。余計な説明や挨拶は一切不要です。座標のみを出力してください。`;
+
+                try {
+                    const responseText = await callApiViaWorker(prompt);
+                    const coords = responseText.match(/(\d+),(\d+)/);
+
+                    if (coords) {
+                        const row = parseInt(coords[1]);
+                        const col = parseInt(coords[2]);
+                        
+                        if (row >= 0 && row < gameState.size && col >= 0 && col < gameState.size && gameState.board[row][col] === '') {
+                             makeMove(row, col);
+                             return;
+                        }
+                    }
+                    makeRandomMove();
+
+                } catch (error) {
+                    console.error('AIの応答エラー:', error);
+                    updateGameInfo('AIエラー発生');
+                    setTimeout(makeRandomMove, 500);
+                }
+            }
+
+            function makeRandomMove() {
+                const emptyCells = [];
+                 for (let r = 0; r < gameState.size; r++) {
+                    for (let c = 0; c < gameState.size; c++) {
+                       if(gameState.board[r][c] === '') {
+                           emptyCells.push({r, c});
+                       }
+                    }
+                 }
+                 if(emptyCells.length > 0) {
+                     const move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                     makeMove(move.r, move.c);
+                 }
+            }
+
+            // --- AI API呼び出し (Worker経由) ---
+
+            async function callApiViaWorker(prompt) {
+                if (!WORKER_URL || WORKER_URL.includes('YOUR_WORKER_SUBDOMAIN')) {
+                    throw new Error('Cloudflare WorkerのURLが設定されていません。コードを編集してください。');
+                }
+                try {
+                    const response = await fetch(WORKER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: prompt })
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || `サーバーからのエラー: ${response.status}`);
+                    }
+                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) {
+                        return text;
+                    } else {
+                        throw new Error('AIが有効な回答を生成できませんでした。');
+                    }
+                } catch (error) {
+                    console.error('API呼び出しエラー:', error);
+                    throw error;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
