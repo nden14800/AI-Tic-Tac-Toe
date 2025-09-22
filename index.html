@@ -281,9 +281,50 @@
         }
 
         /* --- 対戦履歴 --- */
+        .history-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .search-container, .filter-container {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            flex: 1 1 200px;
+        }
+        .search-container svg, .filter-container svg {
+            margin-right: 0.5rem;
+            color: var(--text-color-light);
+            flex-shrink: 0;
+        }
+        #history-search, #history-filter {
+            width: 100%;
+            border: none;
+            background-color: transparent;
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: 1rem;
+        }
+        /* ブラウザネイティブの検索アイコンを非表示にする */
+        #history-search::-webkit-search-decoration,
+        #history-search::-webkit-search-cancel-button {
+            -webkit-appearance: none;
+            display: none;
+        }
+        #history-search:focus, #history-filter:focus {
+            outline: none;
+        }
+        #history-filter {
+            cursor: pointer;
+        }
+
         #history-list {
             list-style: none;
-            max-height: 400px;
+            max-height: 350px;
             overflow-y: auto;
             padding-right: 10px;
         }
@@ -296,10 +337,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 1rem;
         }
-        .history-item div {
+        .history-item .info-group {
             display: flex;
             flex-direction: column;
+            flex-grow: 1;
         }
         .history-item .result {
             font-weight: 700;
@@ -309,6 +352,27 @@
             font-size: 0.9rem;
             color: var(--text-color-light);
         }
+        .delete-history-btn {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color-light);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .delete-history-btn:hover {
+            background-color: var(--accent-color-x);
+            color: white;
+        }
+        .delete-history-btn svg {
+            pointer-events: none; /* SVGがクリックイベントを奪うのを防ぐ */
+        }
+
         #clear-history-btn {
             margin-top: 1rem;
             width: 100%;
@@ -319,7 +383,6 @@
             border-radius: 6px;
             cursor: pointer;
         }
-
 
         /* --- AIローディングスピナー --- */
         @keyframes rotate {
@@ -415,6 +478,27 @@
         <div id="history-tab" class="tab-content">
              <div class="fade-in">
                 <h2>対戦履歴</h2>
+                <div class="history-controls">
+                    <div class="search-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                        <input type="search" id="history-search" placeholder="キーワードで検索...">
+                    </div>
+                    <div class="filter-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+                            <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>
+                        </svg>
+                        <select id="history-filter">
+                            <option value="all">すべて表示</option>
+                            <option value="勝ち">勝ち</option>
+                            <option value="負け">負け</option>
+                            <option value="引き分け">引き分け</option>
+                            <option value="AI対戦">AI対戦</option>
+                            <option value="2人対戦">2人対戦</option>
+                        </select>
+                    </div>
+                </div>
                 <ul id="history-list"></ul>
                 <button id="clear-history-btn" style="display: none;">履歴を全て削除</button>
             </div>
@@ -436,7 +520,6 @@
             const SVG_X_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
             const SPINNER_HTML = `<div class="loader-container"><svg class="loader" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20"></circle></svg></div>`;
 
-
             // --- DOM要素 ---
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -449,6 +532,8 @@
             const newGameBtn = document.getElementById('new-game-btn');
             const historyList = document.getElementById('history-list');
             const clearHistoryBtn = document.getElementById('clear-history-btn');
+            const historySearch = document.getElementById('history-search');
+            const historyFilter = document.getElementById('history-filter');
 
             // --- 初期設定 ---
             let settings = {
@@ -513,12 +598,29 @@
                  document.querySelector('.tab-button[data-tab="settings-tab"]').click();
             });
 
-            // 履歴削除ボタン
+            // 履歴全削除ボタン
             clearHistoryBtn.addEventListener('click', () => {
                 if (confirm('本当に対戦履歴をすべて削除しますか？')) {
                     gameHistory = [];
                     localStorage.removeItem('ticTacToeHistory');
                     renderHistory();
+                }
+            });
+
+            // 履歴検索
+            historySearch.addEventListener('input', () => renderHistory());
+
+            // 履歴フィルター
+            historyFilter.addEventListener('change', () => renderHistory());
+
+            // 履歴個別削除 (イベントデリゲーション)
+            historyList.addEventListener('click', (event) => {
+                const deleteButton = event.target.closest('.delete-history-btn');
+                if (deleteButton) {
+                    const historyId = deleteButton.dataset.id;
+                    if (historyId) {
+                        deleteHistoryItem(historyId);
+                    }
                 }
             });
             
@@ -685,6 +787,7 @@
                     : (result === 'draw' ? '引き分け' : `${result}の勝ち`);
 
                 const historyEntry = {
+                    id: Date.now().toString(), // 削除用に一意のIDを付与
                     mode: gameState.mode === 'ai' ? 'AI対戦' : '2人対戦',
                     size: `${gameState.size}x${gameState.size}`,
                     result: resultText,
@@ -700,27 +803,52 @@
                     gameHistory = JSON.parse(storedHistory);
                 }
             }
+            
+            function deleteHistoryItem(id) {
+                gameHistory = gameHistory.filter(item => item.id !== id);
+                localStorage.setItem('ticTacToeHistory', JSON.stringify(gameHistory));
+                renderHistory();
+            }
 
             function renderHistory() {
                 historyList.innerHTML = '';
-                if (gameHistory.length === 0) {
-                    historyList.innerHTML = '<li>対戦履歴はありません。</li>';
-                    clearHistoryBtn.style.display = 'none';
+                
+                const searchTerm = historySearch.value.toLowerCase();
+                const filterValue = historyFilter.value;
+
+                const filteredHistory = gameHistory.filter(item => {
+                    const filterMatch = filterValue === 'all' || item.result === filterValue || item.mode === filterValue;
+                    const searchMatch = searchTerm === '' ||
+                                        Object.values(item).some(val => 
+                                            String(val).toLowerCase().includes(searchTerm)
+                                        );
+                    return filterMatch && searchMatch;
+                });
+
+                if (filteredHistory.length === 0) {
+                    historyList.innerHTML = '<li>該当する対戦履歴はありません。</li>';
                 } else {
-                    gameHistory.forEach(item => {
+                    filteredHistory.forEach(item => {
                         const li = document.createElement('li');
                         li.className = 'history-item fade-in';
                         li.innerHTML = `
-                            <div>
+                            <div class="info-group">
                                 <span class="result">${item.result}</span>
                                 <span class="details">${item.mode} / ${item.size}</span>
+                                <span class="date">${item.date}</span>
                             </div>
-                            <span class="date">${item.date}</span>
+                            <button class="delete-history-btn" data-id="${item.id}" title="この履歴を削除">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                </svg>
+                            </button>
                         `;
                         historyList.appendChild(li);
                     });
-                    clearHistoryBtn.style.display = 'block';
                 }
+                
+                clearHistoryBtn.style.display = gameHistory.length > 0 ? 'block' : 'none';
             }
             
             // --- AIロジック ---
