@@ -15,6 +15,7 @@
         :root {
             --bg-color: #f4f7f9;
             --text-color: #2c3e50;
+            --text-color-light: #7f8c8d;
             --card-bg-color: #ffffff;
             --border-color: #e0e0e0;
             --primary-color: #3498db;
@@ -30,6 +31,7 @@
             :root {
                 --bg-color: #1a1a2e;
                 --text-color: #e0e0e0;
+                --text-color-light: #95a5a6;
                 --card-bg-color: #16213e;
                 --border-color: #4a4a6a;
                 --primary-color: #0f3460;
@@ -155,7 +157,7 @@
             margin-bottom: 1rem;
         }
 
-        .mode-button, #start-game-btn {
+        .option-button, #start-game-btn {
             padding: 0.8rem 1rem;
             border: 2px solid var(--border-color);
             background-color: var(--card-bg-color);
@@ -165,13 +167,21 @@
             font-size: 1rem;
             font-weight: 500;
             transition: background-color 0.3s, border-color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .option-button svg {
+            width: 20px;
+            height: 20px;
         }
         
-        .mode-button:hover {
+        .option-button:hover {
              border-color: var(--primary-color);
         }
         
-        .mode-button.selected {
+        .option-button.selected {
             background-color: var(--primary-color);
             color: var(--primary-text-color);
             border-color: var(--primary-color);
@@ -270,6 +280,47 @@
              font-weight: 500;
         }
 
+        /* --- 対戦履歴 --- */
+        #history-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .history-item {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item div {
+            display: flex;
+            flex-direction: column;
+        }
+        .history-item .result {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .history-item .details, .history-item .date {
+            font-size: 0.9rem;
+            color: var(--text-color-light);
+        }
+        #clear-history-btn {
+            margin-top: 1rem;
+            width: 100%;
+            background-color: var(--accent-color-x);
+            color: white;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+
         /* --- AIローディングスピナー --- */
         @keyframes rotate {
             100% {
@@ -295,6 +346,7 @@
             stroke-dasharray: 89 150;
             stroke-dashoffset: 0;
             stroke-width: 4;
+            fill: none;
         }
         @media (prefers-color-scheme: dark) {
             .loader .path {
@@ -308,18 +360,16 @@
     <main>
         <nav class="tabs">
             <button class="tab-button active" data-tab="settings-tab">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-controller" viewBox="0 0 16 16">
-                  <path d="M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1z"/>
-                  <path d="M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729q.211.136.373.297c.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466s.34 1.78.364 2.606c.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527s-2.496.723-3.224 1.527c-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.3 2.3 0 0 1 .433-.335l-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a14 14 0 0 0-.748 2.295 12.4 12.4 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.4 12.4 0 0 0-.339-2.406 14 14 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27s-2.063.091-2.913.27"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-controller" viewBox="0 0 16 16"><path d="M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1z"/><path d="M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729q.211.136.373.297c.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466s.34 1.78.364 2.606c.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527s-2.496.723-3.224 1.527c-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.3 2.3 0 0 1 .433-.335l-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a14 14 0 0 0-.748 2.295 12.4 12.4 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.4 12.4 0 0 0-.339-2.406 14 14 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27s-2.063.091-2.913.27"/></svg>
                 ゲーム設定
             </button>
             <button class="tab-button" data-tab="game-tab">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dice-5" viewBox="0 0 16 16">
-                  <path d="M13 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3z"/>
-                  <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dice-5" viewBox="0 0 16 16"><path d="M13 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3z"/><path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/></svg>
                 対戦
+            </button>
+            <button class="tab-button" data-tab="history-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16"><path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/><path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/><path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/></svg>
+                対戦履歴
             </button>
         </nav>
 
@@ -327,10 +377,17 @@
             <div class="fade-in">
                 <h2>ゲーム設定</h2>
                 <div class="setting-group">
-                    <label>ゲームモードを選択</label>
+                    <label>ゲームモード</label>
                     <div class="button-group">
-                        <button class="mode-button selected" data-mode="ai">AIと対戦</button>
-                        <button class="mode-button" data-mode="2p">2人で対戦</button>
+                        <button class="option-button" data-setting="mode" data-value="ai">AIと対戦</button>
+                        <button class="option-button" data-setting="mode" data-value="2p">2人で対戦</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>あなたのマーク（AI対戦時）</label>
+                    <div class="button-group">
+                        <button class="option-button" data-setting="symbol" data-value="X"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>バツ (先手)</button>
+                        <button class="option-button" data-setting="symbol" data-value="O"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/></svg>マル (後手)</button>
                     </div>
                 </div>
                 <div class="setting-group">
@@ -350,8 +407,16 @@
                 <div id="game-info">ゲーム設定タブで設定を開始してください。</div>
                 <div id="game-board"></div>
                 <div id="game-controls">
-                    <button id="new-game-btn" style="display: none;">新しいゲーム</button>
+                    <button id="new-game-btn" style="display: none;">設定に戻る</button>
                 </div>
+            </div>
+        </div>
+
+        <div id="history-tab" class="tab-content">
+             <div class="fade-in">
+                <h2>対戦履歴</h2>
+                <ul id="history-list"></ul>
+                <button id="clear-history-btn" style="display: none;">履歴を全て削除</button>
             </div>
         </div>
     </main>
@@ -364,27 +429,33 @@
         document.addEventListener('DOMContentLoaded', () => {
             // --- グローバル変数 ---
             let gameState = {};
+            let gameHistory = [];
 
             // --- SVGアイコン定義 ---
             const SVG_O_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/></svg>`;
             const SVG_X_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
-            const SPINNER_HTML = `<div class="loader-container"><svg class="loader" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none"></circle></svg></div>`;
+            const SPINNER_HTML = `<div class="loader-container"><svg class="loader" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20"></circle></svg></div>`;
 
 
             // --- DOM要素 ---
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
-            const modeButtons = document.querySelectorAll('.mode-button');
+            const optionButtons = document.querySelectorAll('.option-button');
             const sizeSlider = document.getElementById('size-slider');
             const boardSizeValue = document.getElementById('board-size-value');
             const startGameBtn = document.getElementById('start-game-btn');
             const gameBoard = document.getElementById('game-board');
             const gameInfo = document.getElementById('game-info');
             const newGameBtn = document.getElementById('new-game-btn');
+            const historyList = document.getElementById('history-list');
+            const clearHistoryBtn = document.getElementById('clear-history-btn');
 
             // --- 初期設定 ---
-            let selectedMode = 'ai';
-            let selectedSize = 3;
+            let settings = {
+                mode: 'ai',
+                symbol: 'X',
+                size: 3
+            };
             
             // --- イベントリスナー ---
             
@@ -411,48 +482,77 @@
                 });
             });
 
-            // ゲームモード選択
-            modeButtons.forEach(button => {
+            // ゲーム設定選択
+            optionButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    modeButtons.forEach(btn => btn.classList.remove('selected'));
+                    const settingType = button.dataset.setting;
+                    const value = button.dataset.value;
+                    settings[settingType] = value;
+                    
+                    document.querySelectorAll(`.option-button[data-setting="${settingType}"]`).forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
                     button.classList.add('selected');
-                    selectedMode = button.dataset.mode;
                 });
             });
 
             // ボードサイズスライダー
             sizeSlider.addEventListener('input', () => {
-                selectedSize = parseInt(sizeSlider.value);
-                boardSizeValue.textContent = `${selectedSize} x ${selectedSize}`;
+                settings.size = parseInt(sizeSlider.value);
+                boardSizeValue.textContent = `${settings.size} x ${settings.size}`;
             });
 
             // ゲーム開始ボタン
             startGameBtn.addEventListener('click', () => {
-                initGame(selectedMode, selectedSize);
+                initGame(settings.mode, settings.size, settings.symbol);
                 document.querySelector('.tab-button[data-tab="game-tab"]').click();
             });
             
-            // 新しいゲームボタン
+            // 設定に戻るボタン
             newGameBtn.addEventListener('click', () => {
                  document.querySelector('.tab-button[data-tab="settings-tab"]').click();
             });
 
-            // --- ゲームロジック関数 ---
+            // 履歴削除ボタン
+            clearHistoryBtn.addEventListener('click', () => {
+                if (confirm('本当に対戦履歴をすべて削除しますか？')) {
+                    gameHistory = [];
+                    localStorage.removeItem('ticTacToeHistory');
+                    renderHistory();
+                }
+            });
+            
+            // --- 初期化処理 ---
+            function initialize() {
+                // デフォルト選択状態をUIに反映
+                document.querySelector(`.option-button[data-setting="mode"][data-value="${settings.mode}"]`).classList.add('selected');
+                document.querySelector(`.option-button[data-setting="symbol"][data-value="${settings.symbol}"]`).classList.add('selected');
+                
+                // 履歴読み込みと表示
+                loadHistory();
+                renderHistory();
+            }
 
-            function initGame(mode, size) {
+            // --- ゲームロジック関数 ---
+            function initGame(mode, size, playerSymbol) {
                 gameState = {
                     mode: mode,
                     size: size,
                     board: Array(size).fill(null).map(() => Array(size).fill('')),
-                    currentPlayer: 'X',
+                    currentPlayer: 'X', // 先手は常にX
                     isGameOver: false,
                     moves: 0,
-                    aiPlayer: 'O',
-                    humanPlayer: 'X'
+                    humanPlayer: mode === 'ai' ? playerSymbol : 'X',
+                    aiPlayer: mode === 'ai' ? (playerSymbol === 'X' ? 'O' : 'X') : null
                 };
                 newGameBtn.style.display = 'none';
                 renderBoard();
-                updateGameInfo();
+
+                if (gameState.mode === 'ai' && gameState.currentPlayer === gameState.aiPlayer) {
+                    setTimeout(aiMove, 500);
+                } else {
+                    updateGameInfo();
+                }
             }
             
             function renderBoard() {
@@ -497,9 +597,16 @@
                 cell.classList.add(gameState.currentPlayer, 'occupied', 'fade-in');
 
                 if (checkWin(row, col)) {
-                    endGame(`${gameState.currentPlayer} の勝ち！`);
+                    let winner = gameState.currentPlayer;
+                    let resultMessage;
+                    if (gameState.mode === 'ai') {
+                        resultMessage = winner === gameState.humanPlayer ? 'あなたの勝ち！' : 'あなたの負け...';
+                    } else {
+                        resultMessage = `${winner} の勝ち！`;
+                    }
+                    endGame(resultMessage, winner);
                 } else if (gameState.moves === gameState.size * gameState.size) {
-                    endGame('引き分け！');
+                    endGame('引き分け！', 'draw');
                 } else {
                     switchPlayer();
                 }
@@ -521,7 +628,10 @@
                 } else if (gameState.isGameOver) {
                     return;
                 } else {
-                    gameInfo.textContent = `${gameState.currentPlayer} のターン`;
+                    const turnText = (gameState.mode === '2p')
+                        ? `${gameState.currentPlayer} のターン`
+                        : (gameState.currentPlayer === gameState.humanPlayer ? 'あなたのターン' : 'AIのターン');
+                    gameInfo.textContent = turnText;
                 }
                 gameInfo.classList.add('fade-in');
                 gameInfo.addEventListener('animationend', () => gameInfo.classList.remove('fade-in'), { once: true });
@@ -535,25 +645,13 @@
 
                 const checkDirection = (dr, dc) => {
                     let winningCells = [{r: row, c: col}];
-                    // 正方向
                     for (let i = 1; i < winCondition; i++) {
-                        const r = row + i * dr;
-                        const c = col + i * dc;
-                        if (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) {
-                            winningCells.push({r, c});
-                        } else {
-                            break;
-                        }
+                        const r = row + i * dr; const c = col + i * dc;
+                        if (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) winningCells.push({r, c}); else break;
                     }
-                    // 負方向
                     for (let i = 1; i < winCondition; i++) {
-                        const r = row - i * dr;
-                        const c = col - i * dc;
-                        if (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) {
-                           winningCells.push({r, c});
-                        } else {
-                           break;
-                        }
+                        const r = row - i * dr; const c = col - i * dc;
+                        if (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) winningCells.push({r, c}); else break;
                     }
                     if (winningCells.length >= winCondition) {
                         highlightWinningCells(winningCells);
@@ -561,7 +659,6 @@
                     }
                     return false;
                 };
-
                 return checkDirection(1, 0) || checkDirection(0, 1) || checkDirection(1, 1) || checkDirection(1, -1);
             }
             
@@ -572,15 +669,61 @@
                 });
             }
 
-            function endGame(message) {
+            function endGame(message, result) {
                 gameState.isGameOver = true;
                 updateGameInfo(message);
                 newGameBtn.style.display = 'block';
                 newGameBtn.classList.add('fade-in');
+                saveHistory(result);
+                renderHistory();
+            }
+
+            // --- 履歴管理 ---
+            function saveHistory(result) {
+                const resultText = (gameState.mode === 'ai')
+                    ? (result === gameState.humanPlayer ? '勝ち' : (result === 'draw' ? '引き分け' : '負け'))
+                    : (result === 'draw' ? '引き分け' : `${result}の勝ち`);
+
+                const historyEntry = {
+                    mode: gameState.mode === 'ai' ? 'AI対戦' : '2人対戦',
+                    size: `${gameState.size}x${gameState.size}`,
+                    result: resultText,
+                    date: new Date().toLocaleString('ja-JP')
+                };
+                gameHistory.unshift(historyEntry); // 新しいものを先頭に追加
+                localStorage.setItem('ticTacToeHistory', JSON.stringify(gameHistory));
+            }
+
+            function loadHistory() {
+                const storedHistory = localStorage.getItem('ticTacToeHistory');
+                if (storedHistory) {
+                    gameHistory = JSON.parse(storedHistory);
+                }
+            }
+
+            function renderHistory() {
+                historyList.innerHTML = '';
+                if (gameHistory.length === 0) {
+                    historyList.innerHTML = '<li>対戦履歴はありません。</li>';
+                    clearHistoryBtn.style.display = 'none';
+                } else {
+                    gameHistory.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'history-item fade-in';
+                        li.innerHTML = `
+                            <div>
+                                <span class="result">${item.result}</span>
+                                <span class="details">${item.mode} / ${item.size}</span>
+                            </div>
+                            <span class="date">${item.date}</span>
+                        `;
+                        historyList.appendChild(li);
+                    });
+                    clearHistoryBtn.style.display = 'block';
+                }
             }
             
             // --- AIロジック ---
-
             async function aiMove() {
                 gameInfo.innerHTML = SPINNER_HTML;
                 
@@ -591,12 +734,9 @@
                     const coords = responseText.match(/(\d+),(\d+)/);
 
                     if (coords) {
-                        const row = parseInt(coords[1]);
-                        const col = parseInt(coords[2]);
-                        
+                        const row = parseInt(coords[1]); const col = parseInt(coords[2]);
                         if (row >= 0 && row < gameState.size && col >= 0 && col < gameState.size && gameState.board[row][col] === '') {
-                             makeMove(row, col);
-                             return;
+                             makeMove(row, col); return;
                         }
                     }
                     makeRandomMove();
@@ -612,9 +752,7 @@
                 const emptyCells = [];
                  for (let r = 0; r < gameState.size; r++) {
                     for (let c = 0; c < gameState.size; c++) {
-                       if(gameState.board[r][c] === '') {
-                           emptyCells.push({r, c});
-                       }
+                       if(gameState.board[r][c] === '') emptyCells.push({r, c});
                     }
                  }
                  if(emptyCells.length > 0) {
@@ -624,7 +762,6 @@
             }
 
             // --- AI API呼び出し (Worker経由) ---
-
             async function callApiViaWorker(prompt) {
                 if (!WORKER_URL || WORKER_URL.includes('YOUR_WORKER_SUBDOMAIN')) {
                     throw new Error('Cloudflare WorkerのURLが設定されていません。コードを編集してください。');
@@ -636,20 +773,17 @@
                         body: JSON.stringify({ prompt: prompt })
                     });
                     const data = await response.json();
-                    if (!response.ok) {
-                        throw new Error(data.error || `サーバーからのエラー: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(data.error || `サーバーからのエラー: ${response.status}`);
                     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        return text;
-                    } else {
-                        throw new Error('AIが有効な回答を生成できませんでした。');
-                    }
+                    if (text) return text; else throw new Error('AIが有効な回答を生成できませんでした。');
                 } catch (error) {
                     console.error('API呼び出しエラー:', error);
                     throw error;
                 }
             }
+
+            // 最後に初期化関数を実行
+            initialize();
         });
     </script>
 </body>
