@@ -338,6 +338,11 @@
             justify-content: space-between;
             align-items: center;
             gap: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .history-item:hover {
+            background-color: var(--border-color);
         }
         .history-item .info-group {
             display: flex;
@@ -415,6 +420,69 @@
             .loader .path {
                 stroke: var(--primary-text-color);
             }
+        }
+
+        /* --- 履歴表示モーダル --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg-color);
+            padding: 2rem;
+            border-radius: 12px;
+            position: relative;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-color-light);
+            transition: color 0.3s;
+            padding: 0.5rem;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-color);
+        }
+
+        .modal-content h3 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            color: var(--text-color-light);
+        }
+
+        #modal-board {
+            display: grid;
+            gap: 5px;
+            aspect-ratio: 1 / 1;
+        }
+
+        #modal-board .cell {
+            cursor: default;
+        }
+        
+        #modal-board .cell:not(.occupied):hover {
+            background-color: var(--bg-color);
         }
     </style>
 </head>
@@ -505,6 +573,19 @@
         </div>
     </main>
 
+    <div id="history-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="modal-close-btn" class="modal-close-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                  <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                </svg>
+            </button>
+            <h3 id="modal-title">対戦結果</h3>
+            <div id="modal-board"></div>
+        </div>
+    </div>
+
+
     <script>
         // --- ★★★ 重要 ★★★ ---
         // あなたのCloudflare WorkerのURLに書き換えてください。
@@ -534,6 +615,10 @@
             const clearHistoryBtn = document.getElementById('clear-history-btn');
             const historySearch = document.getElementById('history-search');
             const historyFilter = document.getElementById('history-filter');
+            const historyModal = document.getElementById('history-modal');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBoard = document.getElementById('modal-board');
 
             // --- 初期設定 ---
             let settings = {
@@ -613,14 +698,37 @@
             // 履歴フィルター
             historyFilter.addEventListener('change', () => renderHistory());
 
-            // 履歴個別削除 (イベントデリゲーション)
+            // 履歴アイテムのクリック (イベントデリゲーション)
             historyList.addEventListener('click', (event) => {
+                const historyItem = event.target.closest('.history-item');
+                if (!historyItem) return;
+
                 const deleteButton = event.target.closest('.delete-history-btn');
+                const historyId = historyItem.dataset.id;
+                
                 if (deleteButton) {
-                    const historyId = deleteButton.dataset.id;
+                    // 削除ボタンが押された場合
+                    event.stopPropagation(); // 親要素へのイベント伝播を停止
                     if (historyId) {
                         deleteHistoryItem(historyId);
                     }
+                } else {
+                    // 削除ボタン以外 (アイテム本体) が押された場合
+                    if (historyId) {
+                        showHistoryModal(historyId);
+                    }
+                }
+            });
+            
+            // モーダルを閉じる
+            modalCloseBtn.addEventListener('click', () => {
+                historyModal.style.display = 'none';
+            });
+
+            historyModal.addEventListener('click', (event) => {
+                // オーバーレイ部分をクリックした場合のみ閉じる
+                if (event.target === historyModal) {
+                    historyModal.style.display = 'none';
                 }
             });
             
@@ -644,6 +752,7 @@
                     currentPlayer: 'X', // 先手は常にX
                     isGameOver: false,
                     moves: 0,
+                    winningCells: null, // 勝利ラインのセル情報を保持
                     humanPlayer: mode === 'ai' ? playerSymbol : 'X',
                     aiPlayer: mode === 'ai' ? (playerSymbol === 'X' ? 'O' : 'X') : null
                 };
@@ -756,6 +865,7 @@
                         if (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) winningCells.push({r, c}); else break;
                     }
                     if (winningCells.length >= winCondition) {
+                        gameState.winningCells = winningCells; // 勝ち筋を保存
                         highlightWinningCells(winningCells);
                         return true;
                     }
@@ -787,11 +897,13 @@
                     : (result === 'draw' ? '引き分け' : `${result}の勝ち`);
 
                 const historyEntry = {
-                    id: Date.now().toString(), // 削除用に一意のIDを付与
+                    id: Date.now().toString(),
                     mode: gameState.mode === 'ai' ? 'AI対戦' : '2人対戦',
                     size: `${gameState.size}x${gameState.size}`,
                     result: resultText,
-                    date: new Date().toLocaleString('ja-JP')
+                    date: new Date().toLocaleString('ja-JP'),
+                    board: JSON.parse(JSON.stringify(gameState.board)), // 盤面をディープコピーして保存
+                    winningCells: gameState.winningCells, // 勝ち筋を保存
                 };
                 gameHistory.unshift(historyEntry); // 新しいものを先頭に追加
                 localStorage.setItem('ticTacToeHistory', JSON.stringify(gameHistory));
@@ -831,6 +943,7 @@
                     filteredHistory.forEach(item => {
                         const li = document.createElement('li');
                         li.className = 'history-item fade-in';
+                        li.dataset.id = item.id;
                         li.innerHTML = `
                             <div class="info-group">
                                 <span class="result">${item.result}</span>
@@ -849,6 +962,41 @@
                 }
                 
                 clearHistoryBtn.style.display = gameHistory.length > 0 ? 'block' : 'none';
+            }
+
+            // --- 履歴モーダル表示 ---
+            function showHistoryModal(id) {
+                const historyItem = gameHistory.find(item => item.id === id);
+                if (!historyItem || !historyItem.board) return;
+
+                modalTitle.textContent = `${historyItem.date} の対戦`;
+                modalBoard.innerHTML = '';
+                
+                const boardSize = historyItem.board.length;
+                modalBoard.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+
+                for (let row = 0; row < boardSize; row++) {
+                    for (let col = 0; col < boardSize; col++) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('cell');
+                        const symbol = historyItem.board[row][col];
+                        if (symbol) {
+                            cell.innerHTML = symbol === 'X' ? SVG_X_ICON : SVG_O_ICON;
+                            cell.classList.add(symbol, 'occupied');
+                        }
+                        modalBoard.appendChild(cell);
+                    }
+                }
+                
+                if (historyItem.winningCells) {
+                    historyItem.winningCells.forEach(cellPos => {
+                        const index = cellPos.r * boardSize + cellPos.c;
+                        const cell = modalBoard.children[index];
+                        if (cell) cell.classList.add('win');
+                    });
+                }
+                
+                historyModal.style.display = 'flex';
             }
             
             // --- AIロジック ---
